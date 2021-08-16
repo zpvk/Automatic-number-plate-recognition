@@ -13,8 +13,10 @@
 if __name__ == '__main__':
     import cv2 as cv
     import imutils
+    import numpy as np
+    import pytesseract
 
-    img = cv.imread('4.jpeg', cv.IMREAD_COLOR)
+    img = cv.imread('1.jpeg', cv.IMREAD_COLOR)
     img = cv.resize(img, (400, 200))
 
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -34,13 +36,35 @@ if __name__ == '__main__':
         approx = cv.approxPolyDP(c, 0.018 * peri, True)
         if len(approx) == 4:
             screenCnt.append(approx)
+
     if len(screenCnt) != 0:
         print(len(screenCnt))
         for sc in screenCnt:
             xd = cv.drawContours(img, [sc], -1, (0, 0, 255), 3)
-            cv.imshow('np', xd)
+            cv.imshow('Cropped', xd)
             cv.waitKey(0)
             cv.destroyAllWindows()
     else:
         print("no result")
+
+    # mask = np.zeros(gray.shape, np.uint8)
+    # new_image = cv.drawContours(mask, [screenCnt1], 0, 255, -1, )
+    # new_image = cv.bitwise_and(img, img, mask=mask)
+    #
+    # (x, y) = np.where(mask == 255)
+    # (topx, topy) = (np.min(x), np.min(y))
+    # (bottomx, bottomy) = (np.max(x), np.max(y))
+    # Cropped = gray[topx:bottomx + 1, topy:bottomy + 1]
+    #
+    # text = pytesseract.image_to_string(Cropped, config='--psm 11')
+    # print("programming_fever's License Plate Recognition\n")
+    # print("Detected license plate Number is:", text)
+    # img = cv.resize(img, (500, 300))
+    # Cropped = cv.resize(Cropped, (400, 200))
+    # cv.imshow('car', img)
+    # cv.imshow('Cropped', Cropped)
+    #
+    # cv.waitKey(0)
+    # cv.destroyAllWindows()
+
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
