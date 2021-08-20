@@ -14,9 +14,11 @@ if __name__ == '__main__':
     import cv2 as cv
     import imutils
     import numpy as np
-    import pytesseract
+    import pytesseract as tess
 
-    img = cv.imread('1.jpeg', cv.IMREAD_COLOR)
+    tess.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
+    img = cv.imread('02.jpeg', cv.IMREAD_COLOR)
     img = cv.resize(img, (400, 200))
 
     gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -29,33 +31,45 @@ if __name__ == '__main__':
     contours = imutils.grab_contours(contours)
     contours = sorted(contours, key=cv.contourArea, reverse=True)[:10]
     screenCnt = []
+    screenCnt1 = None
 
     for c in contours:
         # approximate the contour
         peri = cv.arcLength(c, True)  # The function computes a curve length or a closed contour perimeter
         approx = cv.approxPolyDP(c, 0.018 * peri, True)
         if len(approx) == 4:
+            screenCnt1 = approx
             screenCnt.append(approx)
-
+    text = []
     if len(screenCnt) != 0:
         print(len(screenCnt))
         for sc in screenCnt:
             xd = cv.drawContours(img, [sc], -1, (0, 0, 255), 3)
-            cv.imshow('Cropped', xd)
-            cv.waitKey(0)
-            cv.destroyAllWindows()
+            # text.append(tess.image_to_string(xd))
+            # cv.imshow('Cropped', xd)
+            # cv.waitKey(0)
+            # cv.destroyAllWindows()
+        print(text)
     else:
-        print("no result")
+        final = tess.image_to_string(gray)
+        print(final)
+ 
 
-    # mask = np.zeros(gray.shape, np.uint8)
-    # new_image = cv.drawContours(mask, [screenCnt1], 0, 255, -1, )
-    # new_image = cv.bitwise_and(img, img, mask=mask)
-    #
-    # (x, y) = np.where(mask == 255)
-    # (topx, topy) = (np.min(x), np.min(y))
-    # (bottomx, bottomy) = (np.max(x), np.max(y))
-    # Cropped = gray[topx:bottomx + 1, topy:bottomy + 1]
-    #
+
+    mask = np.zeros(gray.shape, np.uint8)
+    for s in screenCnt:
+        new_image = cv.drawContours(mask, [s], 0, 255, -1, )
+        new_image = cv.bitwise_and(img, img, mask=mask)
+        (x, y) = np.where(mask == 255)
+        (topx, topy) = (np.min(x), np.min(y))
+        (bottomx, bottomy) = (np.max(x), np.max(y))
+        Cropped = gray[topx:bottomx + 1, topy:bottomy + 1]
+
+        text.append(tess.image_to_string(Cropped))
+        cv.imshow('Cropped', Cropped)
+        cv.waitKey(0)
+        cv.destroyAllWindows()
+    print(text)
     # text = pytesseract.image_to_string(Cropped, config='--psm 11')
     # print("programming_fever's License Plate Recognition\n")
     # print("Detected license plate Number is:", text)
